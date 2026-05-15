@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiR100 — Admin</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0A0E17;
+    --side:    #0D1220;
+    --panel:   #111827;
+    --card:    #141E2E;
+    --border:  #1E293B;
+    --border2: #243447;
+    --accent:  #00D4FF;
+    --accent2: #0088AA;
+    --green:   #10B981;
+    --yellow:  #F59E0B;
+    --red:     #EF4444;
+    --text:    #E2E8F0;
+    --text2:   #94A3B8;
+    --muted:   #475569;
+    --mono:    'IBM Plex Mono', monospace;
+    --sans:    'IBM Plex Sans', sans-serif;
+  }
+
+  html, body { height: 100%; overflow: hidden; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); display: flex; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--side);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-logo .brand {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+
+  .sidebar-logo .sub {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+    font-family: var(--mono);
+  }
+
+  .nav { flex: 1; padding: 12px 8px; overflow-y: auto; }
+
+  .nav-section {
+    font-size: 9px;
+    font-family: var(--mono);
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 12px 12px 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text2);
+    transition: all 0.15s;
+    margin-bottom: 2px;
+    border: 1px solid transparent;
+  }
+
+  .nav-item:hover { background: var(--border); color: var(--text); }
+
+  .nav-item.active {
+    background: rgba(0,212,255,0.08);
+    color: var(--accent);
+    border-color: rgba(0,212,255,0.2);
+  }
+
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  .sidebar-footer .admin-nome { color: var(--text2); margin-bottom: 8px; }
+
+  .btn-logout {
+    font-size: 11px;
+    color: var(--red);
+    background: none;
+    border: 1px solid rgba(239,68,68,0.3);
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: var(--mono);
+    border-radius: 2px;
+    transition: all 0.15s;
+    letter-spacing: 1px;
+  }
+
+  .btn-logout:hover { background: rgba(239,68,68,0.1); }
+
+  /* ── MAIN ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .topbar {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .topbar h1 {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .topbar-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.2);
+    color: var(--accent);
+    padding: 3px 8px;
+    letter-spacing: 1px;
+    border-radius: 2px;
+  }
+
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px;
+  }
+
+  /* ── SEZIONI ── */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── CARDS STATS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--c, var(--accent));
+  }
+
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .stat-val {
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--c, var(--accent));
+    line-height: 1;
+  }
+
+  /* ── TABELLE ── */
+  .table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: var(--text2);
+    text-transform: uppercase;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left;
+    padding: 10px 20px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    font-weight: 500;
+  }
+  td {
+    padding: 11px 20px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ── BADGE STATUS ── */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    border-radius: 2px;
+    font-weight: 500;
+  }
+  .badge-green  { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+  .badge-red    { background: rgba(239,68,68,0.15); color: var(--red);   border: 1px solid rgba(239,68,68,0.3); }
+  .badge-yellow { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.3); }
+  .badge-blue   { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.2); }
+
+  /* ── BOTTONI ── */
+  .btn {
+    padding: 7px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+    border: 1px solid;
+    text-transform: uppercase;
+  }
+
+  .btn-primary { background: rgba(0,212,255,0.1); border-color: var(--accent); color: var(--accent); }
+  .btn-primary:hover { background: rgba(0,212,255,0.2); }
+
+  .btn-danger { background: rgba(239,68,68,0.1); border-color: var(--red); color: var(--red); }
+  .btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+  .btn-ghost { background: transparent; border-color: var(--border2); color: var(--text2); }
+  .btn-ghost:hover { border-color: var(--text2); color: var(--text); }
+
+  .btn-success { background: rgba(16,185,129,0.1); border-color: var(--green); color: var(--green); }
+  .btn-success:hover { background: rgba(16,185,129,0.2); }
+
+  .btn-sm { padding: 4px 10px; font-size: 10px; }
+
+  .btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--border2);
+    width: 480px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.8);
+  }
+
+  .modal-head {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: var(--text);
+    text-transform: uppercase;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .modal-body { padding: 24px; }
+
+  .modal-foot {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  /* ── FORM ── */
+  .form-group { margin-bottom: 18px; }
+
+  .form-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+  }
+
+  .form-input, .form-select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 10px 12px;
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    border-radius: 2px;
+    transition: border-color 0.15s;
+    appearance: none;
+  }
+
+  .form-input:focus, .form-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px rgba(0,212,255,0.2);
+  }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* ── FACE CAM ── */
+  #face-video-wrap {
+    position: relative;
+    background: #000;
+    border: 1px solid var(--border2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  #face-video {
+    width: 100%;
+    aspect-ratio: 4/3;
+    display: block;
+    transform: scaleX(-1);
+  }
+
+  #face-canvas { display: none; }
+
+  .face-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .face-frame {
+    width: 140px;
+    height: 180px;
+    border: 2px solid rgba(0,212,255,0.6);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(0,212,255,0.2), inset 0 0 0 1px rgba(0,212,255,0.1);
+  }
+
+  .face-status {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text2);
+    min-height: 20px;
+  }
+
+  /* ── CONFIG GRID ── */
+  .config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .config-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 20px;
+  }
+
+  .config-card h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .toast-item {
+    padding: 12px 18px;
+    font-family: var(--mono);
+    font-size: 12px;
+    border-radius: 2px;
+    border-left: 3px solid;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    animation: toast-in 0.25s ease;
+    max-width: 320px;
+  }
+
+  .toast-ok  { border-left-color: var(--green); color: var(--green); }
+  .toast-err { border-left-color: var(--red);   color: #FCA5A5; }
+  .toast-inf { border-left-color: var(--accent); color: var(--text2); }
+
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .empty-row td {
+    text-align: center;
+    padding: 32px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">MiR100</div>
+    <div class="sub">Control Panel</div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-section">Monitor</div>
+    <div class="nav-item active" onclick="goTo('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+
+    <div class="nav-section">Gestione</div>
+    <div class="nav-item" onclick="goTo('operatori')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Operatori
+    </div>
+    <div class="nav-item" onclick="goTo('camion')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="7" width="15" height="13"/><path d="M16 10h4l3 3v4h-7V10z"/><circle cx="5.5" cy="20.5" r="1.5"/><circle cx="18.5" cy="20.5" r="1.5"/></svg>
+      Camion & Pacchi
+    </div>
+    <div class="nav-item" onclick="goTo('destinazioni')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Destinazioni
+    </div>
+
+    <div class="nav-section">Sistema</div>
+    <div class="nav-item" onclick="goTo('storico')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Storico
+    </div>
+    <div class="nav-item" onclick="goTo('config')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Configurazione
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="admin-nome">{{ admin_nome }}</div>
+    <a href="/admin/logout"><button class="btn-logout">Esci</button></a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <h1 id="page-title">Dashboard</h1>
+    <div class="topbar-badge" id="topbar-time">--:--:--</div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── DASHBOARD ── -->
+    <section class="section active" id="sec-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card" style="--c: var(--accent)">
+          <div class="stat-label">Camion attivi</div>
+          <div class="stat-val" id="st-camion">—</div>
+        </div>
+        <div class="stat-card" style="--c: var(--yellow)">
+          <div class="stat-label">Pacchi oggi</div>
+          <div class="stat-val" id="st-pacchi">—</div>
+        </div>
+        <div class="stat-card" style="--c: var(--green)">
+          <div class="stat-label">Scarichi oggi</div>
+          <div class="stat-val" id="st-scarichi">—</div>
+        </div>
+        <div class="stat-card" style="--c: #A78BFA">
+          <div class="stat-label">Missioni oggi</div>
+          <div class="stat-val" id="st-missioni">—</div>
+        </div>
+        <div class="stat-card" style="--c: var(--yellow)">
+          <div class="stat-label">Pacchi in transito</div>
+          <div class="stat-val" id="st-transito">—</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title">Scarichi recenti</span>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Operatore</th><th>Camion / Fornitore</th><th>Stato</th><th>Inizio</th>
+          </tr></thead>
+          <tbody id="dash-scarichi-body">
+            <tr class="empty-row"><td colspan="4">Caricamento...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── OPERATORI ── -->
+    <section class="section" id="sec-operatori">
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title">Operatori registrati</span>
+          <button class="btn btn-primary" onclick="openModal('modal-nuovo-op')">+ Nuovo operatore</button>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Nome</th><th>Ruolo</th><th>Zona</th><th>Face</th><th>Stato</th><th>Azioni</th>
+          </tr></thead>
+          <tbody id="op-table-body">
+            <tr class="empty-row"><td colspan="6">Caricamento...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── CAMION & PACCHI ── -->
+    <section class="section" id="sec-camion">
+      <div class="table-wrap" style="margin-bottom:20px">
+        <div class="table-header">
+          <span class="table-title">Camion</span>
+          <button class="btn btn-primary" onclick="openModal('modal-nuovo-camion')">+ Nuovo camion</button>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Targa</th><th>Fornitore</th><th>Arrivo</th><th>Stato</th><th>Pacchi</th><th>Azioni</th>
+          </tr></thead>
+          <tbody id="cam-table-body">
+            <tr class="empty-row"><td colspan="6">Caricamento...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap" id="pacchi-section" style="display:none">
+        <div class="table-header">
+          <span class="table-title" id="pacchi-title">Pacchi — Camion selezionato</span>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="openModal('modal-nuovo-pacco')">+ Aggiungi pacco</button>
+            <button class="btn btn-ghost" onclick="chiudiPacchi()">✕ Chiudi</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr>
+            <th>ID Pacco</th><th>Destinazione</th><th>Descrizione</th><th>Peso</th><th>Stato</th><th>Azioni</th>
+          </tr></thead>
+          <tbody id="pacchi-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── DESTINAZIONI ── -->
+    <section class="section" id="sec-destinazioni">
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title">Zone & Destinazioni</span>
+          <button class="btn btn-primary" onclick="openModal('modal-nuova-dest')">+ Nuova zona</button>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Nome</th><th>Tipo</th><th>Descrizione</th><th>Stato</th><th>Azioni</th>
+          </tr></thead>
+          <tbody id="dest-table-body">
+            <tr class="empty-row"><td colspan="5">Caricamento...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── STORICO ── -->
+    <section class="section" id="sec-storico">
+      <div class="table-wrap" style="margin-bottom:20px">
+        <div class="table-header"><span class="table-title">Operazioni di scarico</span></div>
+        <table>
+          <thead><tr><th>Operatore</th><th>Targa</th><th>Fornitore</th><th>Stato</th><th>Inizio</th><th>Fine</th></tr></thead>
+          <tbody id="storico-scarichi-body"><tr class="empty-row"><td colspan="6">Caricamento...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header"><span class="table-title">Missioni MiR100</span></div>
+        <table>
+          <thead><tr><th>ID</th><th>Tipo</th><th>Destinazione</th><th>Stato</th><th>Inizio</th><th>Fine</th></tr></thead>
+          <tbody id="storico-missioni-body"><tr class="empty-row"><td colspan="6">Caricamento...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── CONFIG ── -->
+    <section class="section" id="sec-config">
+      <div class="config-grid">
+        <div class="config-card">
+          <h3>🎥 Telecamera Raspberry</h3>
+          <div class="form-group">
+            <label class="form-label">IP Raspberry</label>
+            <input type="text" class="form-input" id="cfg-rpi-ip" placeholder="192.168.1.100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Porta stream</label>
+            <input type="text" class="form-input" id="cfg-rpi-port" placeholder="8080">
+          </div>
+        </div>
+        <div class="config-card">
+          <h3>🤖 Robot MiR100</h3>
+          <div class="form-group">
+            <label class="form-label">IP MiR100</label>
+            <input type="text" class="form-input" id="cfg-mir-ip" placeholder="192.168.1.200">
+          </div>
+        </div>
+        <div class="config-card">
+          <h3>👤 Face Recognition</h3>
+          <div class="form-group">
+            <label class="form-label">Soglia distanza (0.0–1.0)</label>
+            <input type="number" class="form-input" id="cfg-face-soglia" min="0.3" max="0.9" step="0.05" placeholder="0.55">
+          </div>
+        </div>
+        <div class="config-card">
+          <h3>📷 Scanner QR</h3>
+          <div class="form-group">
+            <label class="form-label">Timeout (secondi)</label>
+            <input type="number" class="form-input" id="cfg-qr-timeout" placeholder="60">
+          </div>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-bottom:32px">
+        <button class="btn btn-primary" onclick="salvaConfig()">Salva configurazione</button>
+      </div>
+
+      <div class="config-card" style="max-width:480px">
+        <h3>🔑 Cambia password admin</h3>
+        <div class="form-group">
+          <label class="form-label">Password attuale</label>
+          <input type="password" class="form-input" id="cfg-pw-old" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nuova password</label>
+          <input type="password" class="form-input" id="cfg-pw-new" placeholder="••••••••">
+        </div>
+        <button class="btn btn-success" style="margin-top:8px" onclick="cambiaPassword()">Aggiorna password</button>
+      </div>
+    </section>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ════ MODALI ════ -->
+
+<!-- Nuovo operatore -->
+<div class="modal-overlay" id="modal-nuovo-op">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Nuovo operatore</span>
+      <button class="modal-close" onclick="closeModal('modal-nuovo-op')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="op-nome" placeholder="Mario"></div>
+        <div class="form-group"><label class="form-label">Cognome</label><input class="form-input" id="op-cognome" placeholder="Rossi"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Ruolo</label>
+          <select class="form-select" id="op-ruolo">
+            <option value="operatore">Operatore</option>
+            <option value="supervisore">Supervisore</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Zona assegnata</label>
+          <select class="form-select" id="op-dest">
+            <option value="">— Nessuna —</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-nuovo-op')">Annulla</button>
+      <button class="btn btn-primary" onclick="creaOperatore()">Crea operatore</button>
+    </div>
+  </div>
+</div>
+
+<!-- Face encoding -->
+<div class="modal-overlay" id="modal-face">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Registrazione volto</span>
+      <button class="modal-close" onclick="closeFaceCam()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px;">
+        Posiziona l'operatore davanti alla telecamera del tuo dispositivo,<br>poi premi <strong style="color:var(--accent)">Acquisisci</strong>.
+      </p>
+      <div id="face-video-wrap">
+        <video id="face-video" autoplay playsinline muted></video>
+        <canvas id="face-canvas"></canvas>
+        <div class="face-overlay"><div class="face-frame"></div></div>
+      </div>
+      <div class="face-status" id="face-status">Avvio telecamera...</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeFaceCam()">Annulla</button>
+      <button class="btn btn-primary" onclick="acquisisciFrame()">Acquisisci volto</button>
+    </div>
+  </div>
+</div>
+
+<!-- Nuovo camion -->
+<div class="modal-overlay" id="modal-nuovo-camion">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Nuovo camion</span>
+      <button class="modal-close" onclick="closeModal('modal-nuovo-camion')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Targa</label><input class="form-input" id="cam-targa" placeholder="AB123CD"></div>
+        <div class="form-group"><label class="form-label">Fornitore</label><input class="form-input" id="cam-fornitore" placeholder="LogiTrasporti SRL"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data arrivo</label>
+        <input type="date" class="form-input" id="cam-data">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-nuovo-camion')">Annulla</button>
+      <button class="btn btn-primary" onclick="creaCamion()">Registra camion</button>
+    </div>
+  </div>
+</div>
+
+<!-- Nuovo pacco -->
+<div class="modal-overlay" id="modal-nuovo-pacco">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Aggiungi pacco</span>
+      <button class="modal-close" onclick="closeModal('modal-nuovo-pacco')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Destinazione</label>
+        <select class="form-select" id="pacco-dest"></select>
+      </div>
+      <div class="form-group"><label class="form-label">Descrizione</label><input class="form-input" id="pacco-desc" placeholder="Es. Scatola prodotti secchi"></div>
+      <div class="form-group"><label class="form-label">Peso (kg)</label><input type="number" class="form-input" id="pacco-peso" step="0.1" placeholder="0.0"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-nuovo-pacco')">Annulla</button>
+      <button class="btn btn-primary" onclick="creaPacco()">Aggiungi pacco</button>
+    </div>
+  </div>
+</div>
+
+<!-- Nuova destinazione -->
+<div class="modal-overlay" id="modal-nuova-dest">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Nuova zona</span>
+      <button class="modal-close" onclick="closeModal('modal-nuova-dest')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Nome zona</label><input class="form-input" id="dest-nome" placeholder="Zona D — Magazzino"></div>
+      <div class="form-group"><label class="form-label">Descrizione</label><input class="form-input" id="dest-desc" placeholder="Area..."></div>
+      <div class="form-group">
+        <label class="form-label">Tipo</label>
+        <select class="form-select" id="dest-tipo">
+          <option value="smistamento">Smistamento</option>
+          <option value="scarico">Scarico</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-nuova-dest')">Annulla</button>
+      <button class="btn btn-primary" onclick="creaDest()">Crea zona</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ── GLOBALS ──────────────────────────────────────────────────────────────────
+let destinazioni = [];
+let camionSelezionato = null;
+let faceOpId = null;
+let faceStream = null;
+
+// ── NAV ──────────────────────────────────────────────────────────────────────
+const titoli = {
+  dashboard: 'Dashboard', operatori: 'Operatori',
+  camion: 'Camion & Pacchi', destinazioni: 'Zone & Destinazioni',
+  storico: 'Storico operazioni', config: 'Configurazione sistema'
+};
+
+function goTo(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.trim().toLowerCase().startsWith(titoli[name]?.split(' ')[0]?.toLowerCase() || name)) {
+      n.classList.add('active');
+    }
+  });
+  document.getElementById('page-title').textContent = titoli[name] || name;
+
+  if (name === 'dashboard')    loadDashboard();
+  if (name === 'operatori')    loadOperatori();
+  if (name === 'camion')       loadCamion();
+  if (name === 'destinazioni') loadDestinazioni();
+  if (name === 'storico')      loadStorico();
+  if (name === 'config')       loadConfig();
+}
+
+// ── CLOCK ────────────────────────────────────────────────────────────────────
+setInterval(() => {
+  document.getElementById('topbar-time').textContent = new Date().toLocaleTimeString('it-IT');
+}, 1000);
+
+// ── TOAST ────────────────────────────────────────────────────────────────────
+function toast(msg, tipo = 'inf') {
+  const el = document.createElement('div');
+  el.className = `toast-item toast-${tipo}`;
+  el.textContent = msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ── MODAL ────────────────────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// Chiudi cliccando overlay
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// ── API HELPERS ───────────────────────────────────────────────────────────────
+async function api(url, method = 'GET', body = null) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  return res.json();
+}
+
+// ── BADGE HELPERS ─────────────────────────────────────────────────────────────
+function statoBadge(stato) {
+  const map = {
+    atteso: ['blue','Atteso'], scaricato: ['yellow','Scaricato'],
+    in_transito: ['yellow','In transito'], consegnato: ['green','Consegnato'],
+    in_arrivo: ['blue','In arrivo'], completata: ['green','Completata'],
+    in_corso: ['yellow','In corso'], pianificata: ['blue','Pianificata'],
+    errore: ['red','Errore']
+  };
+  const [cls, label] = map[stato] || ['blue', stato];
+  return `<span class="badge badge-${cls}">${label}</span>`;
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  const s = await api('/admin/api/stats');
+  document.getElementById('st-camion').textContent   = s.camion_attivi;
+  document.getElementById('st-pacchi').textContent   = s.pacchi_oggi;
+  document.getElementById('st-scarichi').textContent = s.scarichi_oggi;
+  document.getElementById('st-missioni').textContent = s.missioni_oggi;
+  document.getElementById('st-transito').textContent = s.pacchi_transito;
+
+  const scarichi = await api('/admin/api/storico/scarichi');
+  const tbody = document.getElementById('dash-scarichi-body');
+  if (!scarichi.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Nessuna operazione</td></tr>'; return;
+  }
+  tbody.innerHTML = scarichi.slice(0,8).map(s => `
+    <tr>
+      <td>${s.op_nome || '—'} ${s.op_cognome || ''}</td>
+      <td>${s.targa || '—'} <span style="color:var(--muted)">${s.fornitore || ''}</span></td>
+      <td>${statoBadge(s.stato)}</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${s.inizio_ts ? s.inizio_ts.substring(0,16) : '—'}</td>
+    </tr>`).join('');
+}
+
+// ── OPERATORI ────────────────────────────────────────────────────────────────
+async function loadOperatori() {
+  const ops = await api('/admin/api/operatori');
+  const tbody = document.getElementById('op-table-body');
+  if (!ops.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Nessun operatore</td></tr>'; return; }
+  tbody.innerHTML = ops.map(o => `
+    <tr>
+      <td><strong>${o.nome} ${o.cognome}</strong></td>
+      <td>${o.ruolo === 'supervisore' ? '<span class="badge badge-blue">Supervisore</span>' : '<span class="badge badge-green">Operatore</span>'}</td>
+      <td>${o.dest_nome || '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${o.face_encoding ? '<span class="badge badge-green">✓ Registrato</span>' : '<span class="badge badge-red">✗ Mancante</span>'}</td>
+      <td>${o.attivo ? '<span class="badge badge-green">Attivo</span>' : '<span class="badge badge-red">Disattivo</span>'}</td>
+      <td>
+        <div class="btn-row">
+          <button class="btn btn-primary btn-sm" onclick="openFaceCam(${o.id})">👤 Face</button>
+          ${o.face_encoding ? `<button class="btn btn-ghost btn-sm" onclick="resetFace(${o.id})">Reset face</button>` : ''}
+          ${o.attivo
+            ? `<button class="btn btn-danger btn-sm" onclick="toggleOp(${o.id}, false)">Disattiva</button>`
+            : `<button class="btn btn-success btn-sm" onclick="toggleOp(${o.id}, true)">Riattiva</button>`}
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+async function creaOperatore() {
+  const r = await api('/admin/api/operatori', 'POST', {
+    nome: document.getElementById('op-nome').value,
+    cognome: document.getElementById('op-cognome').value,
+    ruolo: document.getElementById('op-ruolo').value,
+    destinazione_id: document.getElementById('op-dest').value || null,
+  });
+  if (r.ok) { toast('Operatore creato', 'ok'); closeModal('modal-nuovo-op'); loadOperatori(); }
+  else toast(r.msg || 'Errore', 'err');
+}
+
+async function toggleOp(id, attivo) {
+  await api(`/admin/api/operatori/${id}`, 'PATCH', { attivo });
+  loadOperatori();
+  toast(attivo ? 'Operatore riattivato' : 'Operatore disattivato', 'inf');
+}
+
+async function resetFace(id) {
+  if (!confirm('Cancellare il face encoding di questo operatore?')) return;
+  await api(`/admin/api/operatori/${id}/reset_face`, 'POST');
+  toast('Face encoding rimosso', 'inf');
+  loadOperatori();
+}
+
+// ── FACE CAM ─────────────────────────────────────────────────────────────────
+function openFaceCam(opId) {
+  faceOpId = opId;
+  openModal('modal-face');
+  document.getElementById('face-status').textContent = 'Avvio telecamera...';
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    document.getElementById('face-status').textContent =
+      '⚠ Webcam non accessibile: apri l\'admin su http://localhost:5000 oppure abilita HTTPS.';
+    return;
+  }
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+    .then(stream => {
+      faceStream = stream;
+      const v = document.getElementById('face-video');
+      v.srcObject = stream;
+      document.getElementById('face-status').textContent = 'Telecamera attiva — posiziona il volto nell\'ovale';
+    })
+    .catch(err => {
+      document.getElementById('face-status').textContent = '⚠ Telecamera non disponibile: ' + err.message;
+    });
+}
+
+function closeFaceCam() {
+  if (faceStream) { faceStream.getTracks().forEach(t => t.stop()); faceStream = null; }
+  closeModal('modal-face');
+}
+
+async function acquisisciFrame() {
+  const video = document.getElementById('face-video');
+  if (!video.videoWidth || !video.videoHeight) {
+    document.getElementById('face-status').textContent = '⚠ Video non ancora pronto — attendi qualche secondo e riprova.';
+    return;
+  }
+  const canvas = document.getElementById('face-canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const frame_b64 = canvas.toDataURL('image/jpeg', 0.9);
+
+  document.getElementById('face-status').textContent = '⏳ Elaborazione encoding...';
+  const r = await api(`/admin/api/operatori/${faceOpId}/registra_face`, 'POST', { frame_b64 });
+
+  if (r.ok) {
+    document.getElementById('face-status').textContent = '✓ Volto registrato con successo!';
+    toast('Face encoding salvato', 'ok');
+    setTimeout(() => { closeFaceCam(); loadOperatori(); }, 1200);
+  } else {
+    document.getElementById('face-status').textContent = '⚠ ' + r.msg;
+    toast(r.msg, 'err');
+  }
+}
+
+// ── CAMION ────────────────────────────────────────────────────────────────────
+async function loadCamion() {
+  const camion = await api('/admin/api/camion');
+  const tbody = document.getElementById('cam-table-body');
+  if (!camion.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Nessun camion</td></tr>'; return; }
+  tbody.innerHTML = camion.map(c => {
+    let qr = {}; try { qr = JSON.parse(c.qr_code); } catch {}
+    return `<tr>
+      <td><strong style="font-family:var(--mono)">${c.targa}</strong></td>
+      <td>${c.fornitore || '—'}</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${c.data_arrivo || '—'}</td>
+      <td>${statoBadge(c.stato)}</td>
+      <td><span style="font-family:var(--mono);font-size:11px;color:var(--accent)">${qr.id || '—'}</span></td>
+      <td>
+        <div class="btn-row">
+          <button class="btn btn-ghost btn-sm" onclick="mostraPacchi(${c.id}, '${c.targa}')">📦 Pacchi</button>
+          <a href="/admin/qr/camion/${c.id}" target="_blank"><button class="btn btn-primary btn-sm">🖨 Stampa QR</button></a>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function creaCamion() {
+  const r = await api('/admin/api/camion', 'POST', {
+    targa: document.getElementById('cam-targa').value,
+    fornitore: document.getElementById('cam-fornitore').value,
+    data_arrivo: document.getElementById('cam-data').value || new Date().toISOString().substring(0,10),
+  });
+  if (r.ok) {
+    toast(`Camion registrato — ID: ${r.camion_id}`, 'ok');
+    closeModal('modal-nuovo-camion');
+    loadCamion();
+  } else toast(r.msg || 'Errore', 'err');
+}
+
+async function mostraPacchi(camionId, targa) {
+  camionSelezionato = camionId;
+  document.getElementById('pacchi-title').textContent = `Pacchi — ${targa}`;
+  document.getElementById('pacchi-section').style.display = 'block';
+  await refreshPacchi();
+}
+
+function chiudiPacchi() {
+  camionSelezionato = null;
+  document.getElementById('pacchi-section').style.display = 'none';
+}
+
+async function refreshPacchi() {
+  if (!camionSelezionato) return;
+  const pacchi = await api(`/admin/api/camion/${camionSelezionato}/pacchi`);
+  const tbody = document.getElementById('pacchi-table-body');
+  if (!pacchi.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Nessun pacco</td></tr>'; return; }
+  tbody.innerHTML = pacchi.map(p => {
+    let qr = {}; try { qr = JSON.parse(p.qr_code); } catch {}
+    return `<tr>
+      <td><span style="font-family:var(--mono);color:var(--accent);font-size:11px">${qr.id || '—'}</span></td>
+      <td>${p.dest_nome || '—'}</td>
+      <td>${p.descrizione || '—'}</td>
+      <td style="font-family:var(--mono)">${p.peso_kg ? p.peso_kg + ' kg' : '—'}</td>
+      <td>${statoBadge(p.stato)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="eliminaPacco(${p.id})">Elimina</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function creaPacco() {
+  const r = await api('/admin/api/pacchi', 'POST', {
+    camion_id: camionSelezionato,
+    destinazione_id: document.getElementById('pacco-dest').value,
+    descrizione: document.getElementById('pacco-desc').value,
+    peso_kg: parseFloat(document.getElementById('pacco-peso').value) || 0,
+  });
+  if (r.ok) {
+    toast(`Pacco ${r.pacco_id} aggiunto`, 'ok');
+    closeModal('modal-nuovo-pacco');
+    refreshPacchi();
+  } else toast(r.msg || 'Errore', 'err');
+}
+
+async function eliminaPacco(id) {
+  if (!confirm('Eliminare questo pacco?')) return;
+  await api(`/admin/api/pacchi/${id}`, 'DELETE');
+  toast('Pacco eliminato', 'inf');
+  refreshPacchi();
+}
+
+// ── DESTINAZIONI ──────────────────────────────────────────────────────────────
+async function loadDestinazioni() {
+  destinazioni = await api('/admin/api/destinazioni');
+  const tbody = document.getElementById('dest-table-body');
+  if (!destinazioni.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Nessuna zona</td></tr>'; return; }
+  tbody.innerHTML = destinazioni.map(d => `
+    <tr>
+      <td><strong>${d.nome}</strong></td>
+      <td><span class="badge badge-blue">${d.tipo}</span></td>
+      <td>${d.descrizione || '—'}</td>
+      <td>${d.attiva ? '<span class="badge badge-green">Attiva</span>' : '<span class="badge badge-red">Disattiva</span>'}</td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="toggleDest(${d.id}, ${!d.attiva})">
+          ${d.attiva ? 'Disattiva' : 'Riattiva'}
+        </button>
+      </td>
+    </tr>`).join('');
+
+  // Popola select destinazione negli altri modali
+  const opts = destinazioni.map(d => `<option value="${d.id}">${d.nome}</option>`).join('');
+  ['op-dest', 'pacco-dest'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = (id === 'op-dest' ? '<option value="">— Nessuna —</option>' : '') + opts;
+  });
+}
+
+async function creaDest() {
+  const r = await api('/admin/api/destinazioni', 'POST', {
+    nome: document.getElementById('dest-nome').value,
+    descrizione: document.getElementById('dest-desc').value,
+    tipo: document.getElementById('dest-tipo').value,
+  });
+  if (r.ok) { toast('Zona creata', 'ok'); closeModal('modal-nuova-dest'); loadDestinazioni(); }
+  else toast(r.msg || 'Errore', 'err');
+}
+
+async function toggleDest(id, attiva) {
+  await api(`/admin/api/destinazioni/${id}`, 'PATCH', { attiva });
+  loadDestinazioni();
+}
+
+// ── STORICO ───────────────────────────────────────────────────────────────────
+async function loadStorico() {
+  const [scarichi, missioni] = await Promise.all([
+    api('/admin/api/storico/scarichi'),
+    api('/admin/api/storico/missioni'),
+  ]);
+
+  const sb = document.getElementById('storico-scarichi-body');
+  sb.innerHTML = !scarichi.length ? '<tr class="empty-row"><td colspan="6">Nessuna operazione</td></tr>'
+    : scarichi.map(s => `<tr>
+        <td>${s.op_nome || '—'} ${s.op_cognome || ''}</td>
+        <td style="font-family:var(--mono)">${s.targa || '—'}</td>
+        <td>${s.fornitore || '—'}</td>
+        <td>${statoBadge(s.stato)}</td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${(s.inizio_ts || '—').substring(0,16)}</td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${(s.fine_ts || '—').substring(0,16)}</td>
+      </tr>`).join('');
+
+  const mb = document.getElementById('storico-missioni-body');
+  mb.innerHTML = !missioni.length ? '<tr class="empty-row"><td colspan="6">Nessuna missione</td></tr>'
+    : missioni.map(m => `<tr>
+        <td style="font-family:var(--mono)">${m.id}</td>
+        <td>${m.tipo}</td>
+        <td>${m.dest_nome || '—'}</td>
+        <td>${statoBadge(m.stato)}</td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${(m.inizio_ts || '—').substring(0,16)}</td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${(m.fine_ts || '—').substring(0,16)}</td>
+      </tr>`).join('');
+}
+
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+async function loadConfig() {
+  const cfg = await api('/admin/api/config');
+  document.getElementById('cfg-rpi-ip').value    = cfg.raspberry_ip || '';
+  document.getElementById('cfg-rpi-port').value  = cfg.raspberry_port || '';
+  document.getElementById('cfg-mir-ip').value    = cfg.mir_ip || '';
+  document.getElementById('cfg-face-soglia').value = cfg.face_soglia || '';
+  document.getElementById('cfg-qr-timeout').value = cfg.qr_timeout_sec || '';
+}
+
+async function salvaConfig() {
+  const r = await api('/admin/api/config', 'POST', {
+    raspberry_ip:   document.getElementById('cfg-rpi-ip').value,
+    raspberry_port: document.getElementById('cfg-rpi-port').value,
+    mir_ip:         document.getElementById('cfg-mir-ip').value,
+    face_soglia:    document.getElementById('cfg-face-soglia').value,
+    qr_timeout_sec: document.getElementById('cfg-qr-timeout').value,
+  });
+  if (r.ok) toast('Configurazione salvata', 'ok');
+  else toast('Errore nel salvataggio', 'err');
+}
+
+async function cambiaPassword() {
+  const r = await api('/admin/api/config/password', 'POST', {
+    vecchia: document.getElementById('cfg-pw-old').value,
+    nuova:   document.getElementById('cfg-pw-new').value,
+  });
+  if (r.ok) { toast('Password aggiornata', 'ok'); document.getElementById('cfg-pw-old').value = ''; document.getElementById('cfg-pw-new').value = ''; }
+  else toast(r.msg || 'Errore', 'err');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+(async () => {
+  await loadDestinazioni();
+  document.getElementById('cam-data').value = new Date().toISOString().substring(0,10);
+  loadDashboard();
+})();
+</script>
+</body>
+</html>

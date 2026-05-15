@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MiR100 — Operatore Scarico</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:     #111318;
+    --panel:  #1A1D24;
+    --card:   #1F2330;
+    --border: #2A2F3E;
+    --accent: #3B82F6;
+    --green:  #22C55E;
+    --red:    #EF4444;
+    --yellow: #EAB308;
+    --orange: #FF6B00;
+    --text:   #F1F5F9;
+    --text2:  #94A3B8;
+    --muted:  #475569;
+  }
+
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .header-brand {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--accent);
+  }
+
+  .header-sep { width: 1px; height: 24px; background: var(--border); }
+
+  .header-role {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text2);
+  }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .header-clock {
+    font-size: 22px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    color: var(--text2);
+    letter-spacing: 2px;
+  }
+
+  /* ── STATUS BAR ── */
+  .status-bar {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text2);
+    font-weight: 500;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .status-dot.live { background: var(--green); box-shadow: 0 0 0 2px rgba(34,197,94,0.2); animation: pulse 2s infinite; }
+  .status-dot.warn { background: var(--yellow); }
+
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+
+  /* ── LAYOUT ── */
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    overflow: hidden;
+  }
+
+  /* ── COLONNA SINISTRA: Destinazione + MiR state ── */
+  .left-panel {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── SELEZIONE DESTINAZIONE ── */
+  .dest-select-area {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .dest-select {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 12px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    outline: none;
+    border-radius: 3px;
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .dest-select:focus { border-color: var(--accent); }
+
+  /* ── STATO MiR ── */
+  .mir-state-area {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .mir-state-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 14px;
+  }
+
+  .mir-state-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .mir-fase {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .mir-fase.arrivo   { color: var(--yellow); }
+  .mir-fase.attesa   { color: var(--accent); }
+  .mir-fase.consegna { color: var(--green); }
+  .mir-fase.idle     { color: var(--muted); }
+
+  .mir-detail {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  /* ── PACCO IN ARRIVO ALERT ── */
+  .pacco-alert {
+    margin: 16px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    animation: fadeSlide 0.3s ease;
+  }
+
+  .pacco-alert.visible { display: flex; }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .alert-card {
+    background: rgba(234,179,8,0.1);
+    border: 2px solid var(--yellow);
+    border-radius: 4px;
+    padding: 14px;
+  }
+
+  .alert-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-bottom: 8px;
+  }
+
+  .alert-pacco-id {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: 2px;
+  }
+
+  .alert-desc { font-size: 13px; color: var(--text2); margin-top: 4px; }
+
+  .btn-conferma {
+    width: 100%;
+    padding: 14px;
+    background: var(--green);
+    border: none;
+    border-radius: 3px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #000;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .btn-conferma:hover:not(:disabled) { background: #16A34A; }
+  .btn-conferma:disabled {
+    background: var(--muted);
+    color: rgba(0,0,0,0.4);
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  /* ── BADGE CODA ALERT ── */
+  .alert-queue-badge {
+    display: none;
+    background: rgba(234,179,8,0.2);
+    color: var(--yellow);
+    border: 1px solid rgba(234,179,8,0.4);
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    margin-top: 6px;
+  }
+
+  /* ── PULSANTE RIMANDA MiR ── */
+  .btn-rimanda-mir {
+    display: none;
+    width: calc(100% - 32px);
+    margin: 0 16px 12px;
+    padding: 12px;
+    background: transparent;
+    border: 2px solid var(--orange);
+    border-radius: 3px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--orange);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-rimanda-mir:hover { background: rgba(255,107,0,0.12); }
+
+  /* ── STATO TUTTI CONSEGNATI ── */
+  .empty-state.success { color: var(--green); }
+  .empty-state.success .empty-title { color: var(--green); }
+
+  /* ── STORICO LOCALE ── */
+  .local-log-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+  }
+
+  .local-log-item {
+    padding: 8px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #86EFAC;
+    background: rgba(34,197,94,0.06);
+    border-left: 3px solid var(--green);
+    margin-bottom: 6px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .local-log-ts { font-size: 10px; color: var(--muted); margin-right: 6px; font-weight: 600; }
+
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+  /* ── COLONNA DESTRA: Lista pacchi in transito ── */
+  .right-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .right-topbar {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .right-topbar-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text2);
+  }
+
+  .btn-refresh {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 6px 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+
+  .btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
+
+  .pacchi-grid {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-auto-rows: min-content;
+    gap: 12px;
+    align-content: start;
+  }
+
+  /* ── PACCO CARD ── */
+  .pacco-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pacco-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+  }
+
+  .pacco-card:hover {
+    border-color: var(--accent);
+    background: rgba(59,130,246,0.06);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+
+  .pacco-card-id {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+
+  .pacco-card-fornitore {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .pacco-card-desc {
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+
+  .pacco-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .pacco-card-peso {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .pacco-card-stato {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(234,179,8,0.15);
+    color: var(--yellow);
+    border: 1px solid rgba(234,179,8,0.3);
+  }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .empty-state svg { opacity: 0.3; margin-bottom: 16px; }
+
+  .empty-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .empty-sub { font-size: 13px; }
+
+  /* ── MODAL CONFERMA ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    width: 380px;
+    max-width: 95vw;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.8);
+    animation: modalIn 0.2s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .modal-head {
+    padding: 20px 22px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(59,130,246,0.06);
+    border-top: 3px solid var(--accent);
+  }
+
+  .modal-head-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 4px;
+  }
+
+  .modal-pacco-id {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: 3px;
+  }
+
+  .modal-body { padding: 22px; }
+
+  .modal-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .modal-info-row:last-child { border-bottom: none; }
+  .modal-info-label { color: var(--muted); }
+  .modal-info-val   { color: var(--text); font-weight: 500; }
+
+  .modal-foot {
+    padding: 16px 22px;
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-modal-cancel {
+    flex: 1;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s;
+  }
+
+  .btn-modal-cancel:hover { border-color: var(--text2); color: var(--text); }
+
+  .btn-modal-confirm {
+    flex: 2;
+    padding: 12px;
+    background: var(--green);
+    border: none;
+    color: #000;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s;
+  }
+
+  .btn-modal-confirm:hover { background: #16A34A; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-brand">MiR100</div>
+  <div class="header-sep"></div>
+  <div class="header-role">Operatore Scarico</div>
+  <div class="header-right">
+    <div class="header-clock" id="clock">--:--</div>
+  </div>
+</header>
+
+<div class="status-bar">
+  <div class="status-item">
+    <div class="status-dot" id="mir-dot"></div>
+    <span id="mir-status-text">MiR — in attesa</span>
+  </div>
+  <div class="status-item">
+    <div class="status-dot live"></div>
+    <span>Sistema connesso</span>
+  </div>
+  <div class="status-item" id="dest-status-item" style="margin-left:auto">
+    <span style="color:var(--muted)">Nessuna zona selezionata</span>
+  </div>
+</div>
+
+<main>
+
+  <!-- ── COLONNA SINISTRA ── -->
+  <div class="left-panel">
+
+    <div class="dest-select-area">
+      <div class="section-label">La tua zona</div>
+      <select class="dest-select" id="dest-select" onchange="cambiaDestinazione()">
+        <option value="">— Seleziona zona —</option>
+        {% for d in destinazioni %}
+        <option value="{{ d.id }}">{{ d.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mir-state-area">
+      <div class="mir-state-card">
+        <div class="mir-state-title">Stato MiR100</div>
+        <div class="mir-fase idle" id="mir-fase-txt">In attesa</div>
+        <div class="mir-detail" id="mir-detail-txt">Sistema in standby</div>
+      </div>
+    </div>
+
+    <!-- Pacco in arrivo -->
+    <div class="pacco-alert" id="pacco-alert">
+      <div class="alert-card">
+        <div class="alert-title">⚠ Pacco in arrivo</div>
+        <div class="alert-pacco-id" id="alert-pacco-id">—</div>
+        <div class="alert-desc" id="alert-pacco-desc">—</div>
+        <div class="alert-queue-badge" id="alert-queue-badge"></div>
+      </div>
+      <button class="btn-conferma" id="btn-conferma-alert" onclick="confermaRicezione()" disabled>
+        ⏳ In arrivo...
+      </button>
+    </div>
+
+    <!-- Pulsante rimanda MiR (visibile solo dopo mir_arrivato) -->
+    <button class="btn-rimanda-mir" id="btn-rimanda-mir" onclick="rimandaMir()">
+      ↩ Rimanda MiR
+    </button>
+
+    <div class="local-log-area">
+      <div class="section-label" style="margin-bottom:10px">Ricevuti oggi</div>
+      <div id="local-log"></div>
+    </div>
+
+  </div>
+
+  <!-- ── COLONNA DESTRA ── -->
+  <div class="right-panel">
+    <div class="right-topbar">
+      <div class="right-topbar-title">Pacchi in transito verso questa zona</div>
+      <button class="btn-refresh" onclick="aggiornaPacchi()">↻ Aggiorna</button>
+    </div>
+
+    <div class="pacchi-grid" id="pacchi-grid">
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+        </svg>
+        <div class="empty-title">Nessun pacco</div>
+        <div class="empty-sub">Seleziona la tua zona per vedere i pacchi in arrivo</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODAL CONFERMA PACCO -->
+<div class="modal-overlay" id="modal-pacco">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-title">Conferma ricezione pacco</div>
+      <div class="modal-pacco-id" id="modal-pacco-id">—</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-info-row">
+        <span class="modal-info-label">Destinazione</span>
+        <span class="modal-info-val" id="modal-dest">—</span>
+      </div>
+      <div class="modal-info-row">
+        <span class="modal-info-label">Descrizione</span>
+        <span class="modal-info-val" id="modal-desc">—</span>
+      </div>
+      <div class="modal-info-row">
+        <span class="modal-info-label">Peso</span>
+        <span class="modal-info-val" id="modal-peso">—</span>
+      </div>
+      <div class="modal-info-row">
+        <span class="modal-info-label">Fornitore</span>
+        <span class="modal-info-val" id="modal-fornitore">—</span>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-modal-cancel" onclick="closeModal()">Annulla</button>
+      <button class="btn-modal-confirm" onclick="eseguiConferma()">✓ Ricevuto</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CLOCK ─────────────────────────────────────────────────────────────────
+setInterval(() => {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+}, 1000);
+
+// ── STATO ─────────────────────────────────────────────────────────────────
+let destinazioneId   = null;
+let paccoSelezionato = null;
+let pacchiInTransito = [];
+let paccoAlertQueue  = [];   // coda di alert {qr_code, id, destinazione, ...}
+let mirArrivatoActive = false;  // true dopo mir_arrivato, false dopo mir_ritorno
+
+// ── SSE: aggiorna stato MiR in tempo reale ────────────────────────────────
+const es = new EventSource('/events');
+
+es.addEventListener('stato', e => {
+  const s = JSON.parse(e.data);
+  aggiornaStatoMir(s);
+});
+
+es.addEventListener('pacco_letto', e => {
+  const d = JSON.parse(e.data);
+  if (d.destinazione_id === destinazioneId || !destinazioneId) {
+    mostraPaccoAlert(d);
+  }
+});
+
+es.addEventListener('mir_arrivato', e => {
+  const d = JSON.parse(e.data);
+  mirArrivatoActive = true;
+  _aggiornaBtnConfermaAlert();   // abilita il pulsante "Conferma ricezione"
+  // Aggiorna la griglia immediatamente
+  aggiornaPacchi();
+  // Aggiorna il pannello stato MiR
+  document.getElementById('mir-fase-txt').textContent   = '📦 MiR arrivato';
+  document.getElementById('mir-fase-txt').className     = 'mir-fase consegna';
+  document.getElementById('mir-detail-txt').textContent = `Robot in ${d.destinazione || 'zona'} — conferma ricezione pacchi`;
+  document.getElementById('mir-status-text').textContent = `MiR — arrivato in ${d.destinazione || 'zona'}`;
+  document.getElementById('mir-dot').className = 'status-dot live';
+  // Mostra il pulsante rimanda solo se questa è la nostra destinazione (o nessuna selezionata)
+  document.getElementById('btn-rimanda-mir').style.display = 'block';
+});
+
+es.addEventListener('mir_ritorno', e => {
+  const d = JSON.parse(e.data);
+  mirArrivatoActive = false;
+  _aggiornaBtnConfermaAlert();   // disabilita di nuovo
+  document.getElementById('btn-rimanda-mir').style.display = 'none';
+  document.getElementById('mir-fase-txt').textContent   = '↩ MiR in rientro';
+  document.getElementById('mir-fase-txt').className     = 'mir-fase attesa';
+  document.getElementById('mir-detail-txt').textContent = `Robot in rientro verso ${d.destinazione || 'base'}`;
+  document.getElementById('mir-status-text').textContent = 'MiR — in rientro';
+  document.getElementById('mir-dot').className = 'status-dot live';
+});
+
+es.addEventListener('tutti_consegnati', e => {
+  const d = JSON.parse(e.data);
+  // Mostra solo se riguarda la nostra destinazione (o nessuna selezionata)
+  if (!destinazioneId || d.destinazione_id === destinazioneId) {
+    mostraTuttiConsegnati();
+  }
+});
+
+function aggiornaStatoMir(s) {
+  const fase = s.fase || 0;
+  const dot  = document.getElementById('mir-dot');
+  const faseTxt   = document.getElementById('mir-fase-txt');
+  const detailTxt = document.getElementById('mir-detail-txt');
+  const mirStatus = document.getElementById('mir-status-text');
+
+  const fasi = {
+    0: { label: 'In standby',            detail: 'In attesa di nuove operazioni', cls: 'idle',   dot: '' },
+    1: { label: 'Camion scansionato',    detail: 'Operatore in autenticazione',   cls: 'attesa', dot: 'warn' },
+    2: { label: 'Scansione pacchi',      detail: 'Pacchi in corso di carico',     cls: 'arrivo', dot: 'warn' },
+    3: { label: 'Conferma identità',     detail: 'Seconda autenticazione',        cls: 'attesa', dot: 'warn' },
+    4: { label: '🚀 MiR in missione',    detail: 'Robot in transito verso zona',  cls: 'consegna', dot: 'live' },
+  };
+
+  const info = fasi[fase] || fasi[0];
+  faseTxt.textContent   = info.label;
+  faseTxt.className     = `mir-fase ${info.cls}`;
+  detailTxt.textContent = info.detail;
+  mirStatus.textContent = `MiR — ${info.label}`;
+  dot.className = `status-dot ${info.dot}`;
+}
+
+// ── DESTINAZIONE ──────────────────────────────────────────────────────────
+function cambiaDestinazione() {
+  const sel = document.getElementById('dest-select');
+  destinazioneId = sel.value ? parseInt(sel.value) : null;
+  const nome = sel.options[sel.selectedIndex]?.text || '—';
+
+  document.getElementById('dest-status-item').innerHTML =
+    destinazioneId
+      ? `<div class="status-dot live"></div><span style="color:var(--green);font-weight:600">${nome}</span>`
+      : `<span style="color:var(--muted)">Nessuna zona selezionata</span>`;
+
+  aggiornaPacchi();
+}
+
+async function aggiornaPacchi() {
+  if (!destinazioneId) {
+    renderPacchiGrid([]);
+    return;
+  }
+  const pacchi = await fetch(`/api/pacchi_destinazione/${destinazioneId}`).then(r => r.json());
+  pacchiInTransito = pacchi;
+  renderPacchiGrid(pacchi);
+}
+
+function renderPacchiGrid(pacchi) {
+  const grid = document.getElementById('pacchi-grid');
+  if (!pacchi.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+        </svg>
+        <div class="empty-title">Nessun pacco in transito</div>
+        <div class="empty-sub">I pacchi appariranno quando il MiR è in movimento</div>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = pacchi.map(p => {
+    let qr = {}; try { qr = JSON.parse(p.qr_code); } catch {}
+    const pid = qr.id || p.qr_code;
+    return `<div class="pacco-card"
+      data-qr="${escAttr(p.qr_code)}"
+      data-pid="${escAttr(pid)}"
+      data-desc="${escAttr(p.descrizione || '')}"
+      data-peso="${escAttr(String(p.peso_kg || ''))}"
+      data-fornitore="${escAttr(p.fornitore || '')}"
+      onclick="openModal(this)">
+      <div class="pacco-card-id">${pid}</div>
+      <div class="pacco-card-fornitore">${p.fornitore || '—'}</div>
+      <div class="pacco-card-desc">${p.descrizione || 'Nessuna descrizione'}</div>
+      <div class="pacco-card-footer">
+        <div class="pacco-card-peso">${p.peso_kg ? p.peso_kg + ' kg' : '—'}</div>
+        <div class="pacco-card-stato">In transito</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Escape per attributi HTML (gestisce virgolette doppie, &, ecc.)
+function escAttr(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+// ── PACCO ALERT (SSE pacco in arrivo) — coda multi-pacco ──────────────────
+
+function mostraPaccoAlert(d) {
+  paccoAlertQueue.push(d);
+  if (paccoAlertQueue.length === 1) {
+    _renderPrimoAlert();        // prima notifica: mostra subito
+  } else {
+    _aggiornaBadgeCoda();       // notifiche successive: aggiorna solo il contatore
+  }
+}
+
+function _renderPrimoAlert() {
+  if (!paccoAlertQueue.length) {
+    document.getElementById('pacco-alert').classList.remove('visible');
+    return;
+  }
+  const d = paccoAlertQueue[0];
+  document.getElementById('alert-pacco-id').textContent   = d.id || '—';
+  document.getElementById('alert-pacco-desc').textContent = d.destinazione || '';
+  document.getElementById('pacco-alert').classList.add('visible');
+  _aggiornaBadgeCoda();
+  _aggiornaBtnConfermaAlert();
+}
+
+function _aggiornaBtnConfermaAlert() {
+  const btn = document.getElementById('btn-conferma-alert');
+  if (!btn) return;
+  btn.disabled    = !mirArrivatoActive;
+  btn.textContent = mirArrivatoActive ? '✓ Conferma ricezione' : '⏳ In arrivo...';
+}
+
+function _aggiornaBadgeCoda() {
+  const badge = document.getElementById('alert-queue-badge');
+  const n = paccoAlertQueue.length;
+  if (n > 1) {
+    badge.textContent    = `+${n - 1} in coda`;
+    badge.style.display  = 'inline-block';
+  } else {
+    badge.style.display  = 'none';
+  }
+}
+
+async function confermaRicezione() {
+  if (!paccoAlertQueue.length) return;
+  const qr = paccoAlertQueue[0].qr_code;
+  await fetch('/api/conferma_ricezione', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ qr_code: qr })
+  });
+  addLocalLog(qr);
+  paccoAlertQueue.shift();     // rimuove il primo dalla coda
+  _renderPrimoAlert();         // mostra il prossimo (o nasconde il box)
+  setTimeout(aggiornaPacchi, 500);
+}
+
+// ── RITORNO MANUALE MiR ───────────────────────────────────────────────────
+async function rimandaMir() {
+  const btn = document.getElementById('btn-rimanda-mir');
+  btn.disabled   = true;
+  btn.textContent = '↩ Invio...';
+  const res = await fetch('/api/ritorno_mir', { method: 'POST' });
+  const json = await res.json();
+  if (!json.ok) {
+    btn.disabled   = false;
+    btn.textContent = '↩ Rimanda MiR';
+    alert(json.msg || 'Errore invio ritorno MiR');
+  }
+  // Se ok, il pulsante viene nascosto dall'evento SSE mir_ritorno
+}
+
+// ── FEEDBACK TUTTI CONSEGNATI ────────────────────────────────────────────
+function mostraTuttiConsegnati() {
+  document.getElementById('btn-rimanda-mir').style.display = 'none';
+  const grid = document.getElementById('pacchi-grid');
+  grid.innerHTML = `
+    <div class="empty-state success">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M20 6L9 17l-5-5"/>
+      </svg>
+      <div class="empty-title">Tutti i pacchi ricevuti!</div>
+      <div class="empty-sub">MiR100 sta rientrando alla base</div>
+    </div>`;
+}
+
+// ── MODAL CONFERMA PACCO (click su card) ──────────────────────────────────
+function openModal(el) {
+  const qrCode  = el.dataset.qr;
+  const pid     = el.dataset.pid;
+  paccoSelezionato = qrCode;
+
+  document.getElementById('modal-pacco-id').textContent  = pid;
+  document.getElementById('modal-dest').textContent      = document.getElementById('dest-select').options[document.getElementById('dest-select').selectedIndex]?.text || '—';
+  document.getElementById('modal-desc').textContent      = el.dataset.desc || '—';
+  document.getElementById('modal-peso').textContent      = el.dataset.peso ? el.dataset.peso + ' kg' : '—';
+  document.getElementById('modal-fornitore').textContent = el.dataset.fornitore || '—';
+
+  document.getElementById('modal-pacco').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-pacco').classList.remove('open');
+  paccoSelezionato = null;
+}
+
+async function eseguiConferma() {
+  if (!paccoSelezionato) return;
+  const qr = paccoSelezionato;
+  await fetch('/api/conferma_ricezione', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ qr_code: qr })
+  });
+  addLocalLog(qr);
+  // Rimuovi dalla coda alert se era presente
+  const idx = paccoAlertQueue.findIndex(a => a.qr_code === qr);
+  if (idx !== -1) {
+    paccoAlertQueue.splice(idx, 1);
+    _renderPrimoAlert();
+  }
+  closeModal();
+  setTimeout(aggiornaPacchi, 400);
+}
+
+// ── LOG LOCALE ────────────────────────────────────────────────────────────
+function addLocalLog(qrCode) {
+  let qr = {}; try { qr = JSON.parse(qrCode); } catch {}
+  const pid = qr.id || qrCode;
+  const ts  = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const log = document.getElementById('local-log');
+  const el  = document.createElement('div');
+  el.className = 'local-log-item';
+  el.innerHTML = `<span class="local-log-ts">${ts}</span> Pacco <strong>${pid}</strong> ricevuto`;
+  log.insertBefore(el, log.firstChild);
+}
+
+// ── AGGIORNAMENTO AUTOMATICO PACCHI ───────────────────────────────────────
+setInterval(() => {
+  if (destinazioneId) aggiornaPacchi();
+}, 15000);
+
+// ── INIT ─────────────────────────────────────────────────────────────────
+fetch('/api/stato').then(r => r.json()).then(aggiornaStatoMir);
+</script>
+</body>
+</html>

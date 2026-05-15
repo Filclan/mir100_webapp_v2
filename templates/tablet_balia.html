@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MiR100 — Balia Camion</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:     #111318;
+    --panel:  #1A1D24;
+    --card:   #1F2330;
+    --border: #2A2F3E;
+    --accent: #3B82F6;
+    --blue:   #3B82F6;
+    --green:  #22C55E;
+    --red:    #EF4444;
+    --yellow: #EAB308;
+    --text:   #F1F5F9;
+    --text2:  #94A3B8;
+    --muted:  #475569;
+  }
+
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .header-brand {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--accent);
+  }
+
+  .header-sep { width: 1px; height: 24px; background: var(--border); }
+
+  .header-role {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text2);
+  }
+
+  .header-clock {
+    margin-left: auto;
+    font-size: 22px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    color: var(--text2);
+    letter-spacing: 2px;
+  }
+
+  /* ── STEPPER ── */
+  .stepper {
+    display: flex;
+    align-items: stretch;
+    background: var(--panel);
+    border-bottom: 2px solid var(--border);
+    height: 52px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .step {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-right: 1px solid var(--border);
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .step:last-child { border-right: none; }
+
+  .step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .step.active  { color: var(--accent); background: rgba(59,130,246,0.06); }
+  .step.active .step-num { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .step.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  .step.done  { color: var(--green); }
+  .step.done .step-num { border-color: var(--green); background: var(--green); color: #fff; }
+
+  /* ── LAYOUT ── */
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    overflow: hidden;
+  }
+
+  /* ── PANNELLO CAMERA ── */
+  .cam-panel {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .cam-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  #camera-img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    display: block;
+    object-fit: cover;
+    background: #000;
+  }
+
+  #camera-img.off { filter: brightness(0.15) grayscale(1); }
+
+  .cam-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+
+  .cam-badge.live  { background: var(--green); color: #000; }
+  .cam-badge.off   { background: var(--muted); color: #fff; }
+
+  /* ── LOG EVENTI ── */
+  .log-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .log-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 0 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+
+  .log-item {
+    padding: 8px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    border-left: 3px solid;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .log-item.ok     { background: rgba(34,197,94,0.08); border-color: var(--green); color: #86EFAC; }
+  .log-item.errore { background: rgba(239,68,68,0.08); border-color: var(--red);   color: #FCA5A5; }
+  .log-item.info   { background: rgba(59,130,246,0.08); border-color: var(--blue); color: #93C5FD; }
+
+  .log-ts { font-size: 10px; opacity: 0.6; margin-right: 6px; font-weight: 600; }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+
+  /* ── PANNELLO AZIONI ── */
+  .action-panel {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 20px;
+    gap: 16px;
+  }
+
+  /* ── FASE CARD ── */
+  .fase-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px 24px;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .fase-card.visible { display: block; }
+
+  .fase-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .fase-sub {
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  /* ── BOTTONI AZIONE ── */
+  .btn-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 18px 24px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 2px solid;
+    transition: all 0.2s;
+    margin-bottom: 8px;
+  }
+
+  .btn-orange { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-orange:hover { background: #2563EB; }
+  .btn-orange:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-green { background: transparent; border-color: var(--green); color: var(--green); }
+  .btn-green:hover { background: rgba(34,197,94,0.1); }
+
+  .btn-blue { background: transparent; border-color: var(--blue); color: var(--blue); }
+  .btn-blue:hover { background: rgba(59,130,246,0.1); }
+
+  /* ── STATO OPERATORE ── */
+  .op-card {
+    background: rgba(34,197,94,0.08);
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 4px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .op-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #000;
+    flex-shrink: 0;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+
+  .op-info .op-nome { font-size: 16px; font-weight: 600; }
+  .op-info .op-ruolo { font-size: 11px; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
+
+  /* ── LISTA PACCHI ── */
+  .pacchi-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .pacchi-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text2);
+  }
+
+  .progress-bar-wrap {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  .pacco-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .pacco-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    transition: all 0.3s;
+    font-size: 13px;
+  }
+
+  .pacco-row.scansionato {
+    border-color: rgba(34,197,94,0.3);
+    background: rgba(34,197,94,0.05);
+  }
+
+  .pacco-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--muted);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.3s;
+  }
+
+  .pacco-row.scansionato .pacco-check {
+    background: var(--green);
+    border-color: var(--green);
+    color: #000;
+  }
+
+  .pacco-id { font-weight: 600; color: var(--accent); font-size: 13px; flex-shrink: 0; }
+  .pacco-dest { color: var(--text2); flex: 1; }
+  .pacco-peso { color: var(--muted); font-size: 12px; flex-shrink: 0; }
+
+  /* ── BUSY SPINNER ── */
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-brand">MiR100</div>
+  <div class="header-sep"></div>
+  <div class="header-role">Operatore Balia Camion</div>
+  <div class="header-clock" id="clock">--:--</div>
+</header>
+
+<div class="stepper">
+  <div class="step active" id="st0"><div class="step-num">1</div> QR Camion</div>
+  <div class="step" id="st1"><div class="step-num">2</div> Autenticazione</div>
+  <div class="step" id="st2"><div class="step-num">3</div> Scansione Pacchi</div>
+  <div class="step" id="st3"><div class="step-num">4</div> Conferma Auth</div>
+  <div class="step" id="st4"><div class="step-num">5</div> Invio MiR</div>
+</div>
+
+<main>
+  <!-- Colonna camera -->
+  <div class="cam-panel">
+    <div class="cam-wrap">
+      <img id="camera-img" class="off" src="/camera" alt="Camera">
+      <div class="cam-badge off" id="cam-badge">SPENTA</div>
+    </div>
+    <div class="log-area">
+      <div class="log-label">Log eventi</div>
+      <div id="log-container"></div>
+    </div>
+  </div>
+
+  <!-- Colonna azioni -->
+  <div class="action-panel">
+
+    <!-- FASE 0: scan camion -->
+    <div class="fase-card visible" id="fase-0">
+      <div class="fase-title">Scansiona il camion</div>
+      <div class="fase-sub">Avvicina il QR code del camion alla telecamera per iniziare la sessione di scarico.</div>
+      <button class="btn-action btn-orange" id="btn-scan-camion" onclick="scanCamion()">
+        📷 Avvia scanner camion
+      </button>
+    </div>
+
+    <!-- FASE 1: auth -->
+    <div class="fase-card" id="fase-1">
+      <div class="fase-title">Autenticazione operatore</div>
+      <div class="fase-sub">Posizionati davanti alla telecamera per il riconoscimento facciale.</div>
+      <button class="btn-action btn-blue" id="btn-auth" onclick="authFacciale(1)">
+        👤 Riconoscimento facciale
+      </button>
+    </div>
+
+    <!-- FASE 2: scansione pacchi -->
+    <div class="fase-card" id="fase-2">
+      <div class="fase-title">Scansione pacchi in corso</div>
+      <div class="fase-sub">Avvicina i QR code dei pacchi alla telecamera. La lista si aggiorna automaticamente.</div>
+
+      <div id="op-display"></div>
+
+      <div class="pacchi-header">
+        <div class="pacchi-title">Pacchi attesi</div>
+        <div id="pacchi-counter" style="font-size:13px;color:var(--text2)">0 / 0</div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+      </div>
+      <div class="pacco-list" id="pacco-list"></div>
+    </div>
+
+    <!-- FASE 3: seconda auth -->
+    <div class="fase-card" id="fase-3">
+      <div class="fase-title">Conferma identità</div>
+      <div class="fase-sub">Tutti i pacchi sono stati registrati. Conferma nuovamente la tua identità per procedere con il MiR100.</div>
+      <div id="op-display-2"></div>
+      <button class="btn-action btn-blue" onclick="authFacciale(3)">
+        👤 Conferma identità
+      </button>
+    </div>
+
+    <!-- FASE 4: invio MiR -->
+    <div class="fase-card" id="fase-4">
+      <div class="fase-title">Pronto per il MiR100</div>
+      <div class="fase-sub">Autenticazione completata. Invia il comando al robot per avviare il trasporto.</div>
+      <div id="op-display-3"></div>
+      <button class="btn-action btn-orange" onclick="inviaMir()">
+        🤖 Avvia MiR100
+      </button>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// ── CLOCK ──────────────────────────────────────────────────────────────────
+setInterval(() => {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'});
+}, 1000);
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let stato = {};
+
+// ── SSE ───────────────────────────────────────────────────────────────────
+const es = new EventSource('/events');
+
+es.addEventListener('stato', e => {
+  stato = JSON.parse(e.data);
+  renderStato();
+});
+
+es.addEventListener('notifica', e => {
+  const d = JSON.parse(e.data);
+  addLog(d.tipo, d.msg, d.ts);
+});
+
+es.addEventListener('pacco_letto', e => {
+  const d = JSON.parse(e.data);
+  marcaPacco(d.qr_code, d);
+});
+
+// ── RENDER ────────────────────────────────────────────────────────────────
+function renderStato() {
+  const fase = stato.fase || 0;
+
+  // Stepper
+  for (let i = 0; i <= 4; i++) {
+    const el = document.getElementById('st' + i);
+    el.className = 'step' + (i < fase ? ' done' : i === fase ? ' active' : '');
+  }
+
+  // Fase cards
+  for (let i = 0; i <= 4; i++) {
+    const el = document.getElementById('fase-' + i);
+    if (el) el.classList.toggle('visible', i === fase);
+  }
+
+  // Camera badge
+  const img   = document.getElementById('camera-img');
+  const badge = document.getElementById('cam-badge');
+  if (stato.camera_attiva) {
+    img.classList.remove('off');
+    badge.className = 'cam-badge live';
+    badge.textContent = '● LIVE';
+  } else {
+    img.classList.add('off');
+    badge.className = 'cam-badge off';
+    badge.textContent = 'SPENTA';
+  }
+
+  // Lista pacchi (fase 2)
+  if (fase === 2 && stato.pacchi_lista?.length) {
+    renderPacchi();
+    renderOpCard(stato.operatore, 'op-display');
+  }
+
+  if (fase === 3) renderOpCard(stato.operatore, 'op-display-2');
+  if (fase === 4) renderOpCard(stato.operatore, 'op-display-3');
+
+  // Bottoni busy
+  document.querySelectorAll('.btn-action').forEach(b => {
+    b.disabled = stato.busy;
+  });
+}
+
+function renderOpCard(op, targetId) {
+  if (!op) return;
+  const initials = (op.nome?.[0] || '') + (op.cognome?.[0] || '');
+  document.getElementById(targetId).innerHTML = `
+    <div class="op-card">
+      <div class="op-avatar">${initials.toUpperCase()}</div>
+      <div class="op-info">
+        <div class="op-nome">${op.nome} ${op.cognome}</div>
+        <div class="op-ruolo">${op.ruolo}</div>
+      </div>
+    </div>`;
+}
+
+function renderPacchi() {
+  const lista = stato.pacchi_lista || [];
+  const scan  = new Set(stato.pacchi_scansionati || []);
+  const done  = lista.filter(p => scan.has(p.qr_code)).length;
+
+  document.getElementById('pacchi-counter').textContent = `${done} / ${lista.length}`;
+  const pct = lista.length ? (done / lista.length * 100) : 0;
+  document.getElementById('progress-bar').style.width = pct + '%';
+
+  const container = document.getElementById('pacco-list');
+  container.innerHTML = lista.map(p => {
+    const fatto = scan.has(p.qr_code);
+    return `<div class="pacco-row ${fatto ? 'scansionato' : ''}" id="pacco-${btoa(p.qr_code).replace(/=/g,'')}">
+      <div class="pacco-check">${fatto ? '✓' : ''}</div>
+      <div class="pacco-id">${p.id}</div>
+      <div class="pacco-dest">${p.destinazione}</div>
+      <div class="pacco-peso">${p.peso_kg ? p.peso_kg + ' kg' : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+function marcaPacco(qr_code, info) {
+  // Aggiorna riga esistente senza re-render completo
+  renderPacchi();
+}
+
+// ── LOG ───────────────────────────────────────────────────────────────────
+function addLog(tipo, msg, ts) {
+  const container = document.getElementById('log-container');
+  const el = document.createElement('div');
+  el.className = `log-item ${tipo}`;
+  el.innerHTML = `<span class="log-ts">${ts || ''}</span>${msg}`;
+  container.insertBefore(el, container.firstChild);
+  if (container.children.length > 20) container.lastChild.remove();
+}
+
+// ── AZIONI ────────────────────────────────────────────────────────────────
+async function scanCamion() {
+  document.getElementById('btn-scan-camion').disabled = true;
+  await fetch('/api/scan_camion', { method: 'POST' });
+}
+
+async function authFacciale(fase) {
+  await fetch('/api/auth_facciale', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ fase })
+  });
+}
+
+async function inviaMir() {
+  await fetch('/api/invia_mir', { method: 'POST' });
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────
+fetch('/api/stato').then(r => r.json()).then(s => { stato = s; renderStato(); });
+</script>
+</body>
+</html>

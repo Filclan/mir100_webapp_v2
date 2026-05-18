@@ -95,8 +95,7 @@ class QRScanner:
                 self._ultimo_qr_id = qr["id"]
                 return qr
 
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                return None
+            time.sleep(2)
 
     def scansiona_lista(self, id_pacchi_attesi: list[str],
                          callback_pacco: callable = None,
@@ -125,9 +124,9 @@ class QRScanner:
         letti = []
 
 
+        import time as _time
         while rimanenti:
             frame, trovati = self.leggi_frame()
-
 
             for qr in trovati:
                 pacco_id = _normalizza(qr["id"])
@@ -140,8 +139,7 @@ class QRScanner:
                     if callback_pacco:
                         callback_pacco(qr)
 
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+            _time.sleep(2)
 
         if not rimanenti and callback_completato:
             callback_completato()

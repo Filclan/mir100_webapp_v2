@@ -120,11 +120,10 @@ class RiconoscimentoFacciale:
             if operatore_trovato:
                 print(f"[Face] Operatore riconosciuto: {operatore_trovato['nome']} {operatore_trovato['cognome']}")
                 if mostra_preview:
-                    cv2.waitKey(1000)  # mostra il frame di conferma 1 secondo
+                    time.sleep(1)  # mostra il frame di conferma 1 secondo
                 return operatore_trovato
 
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                return None
+            time.sleep(2)
 
     def registra_operatore(self, nome: str, cognome: str,
                            n_campioni: int = 5) -> list | None:
